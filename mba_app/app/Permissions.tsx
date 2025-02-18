@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity} from 'react-native';
 import { Card} from 'react-native-paper';
 import { styles } from './Welcome';
 import { useState, useEffect } from 'react';
+import { Link } from 'expo-router';
 import * as Calendar from 'expo-calendar';
 import * as Contacts  from 'expo-contacts';
 
@@ -42,9 +43,11 @@ const PermissionsScreen = () => {
           <Text style={styles.permissionText}>To remind you of key dates like birthdays and anniversaries</Text>
         </TouchableOpacity>
       </Card>
-      <TouchableOpacity style={contacts && calendar ? styles.nextButton: styles.disabledButton} disabled={!contacts || !calendar}>
-        <Text style={styles.buttonText}>Next Steps</Text>
-      </TouchableOpacity>
+      <Link href="/Satisfaction" style={contacts && calendar ? styles.nextButton: styles.disabledButton}>
+        <TouchableOpacity disabled={!contacts || !calendar}>
+          <Text style={styles.buttonText}>Next Steps</Text>
+        </TouchableOpacity>
+      </Link>
     </View>
   );
 };
