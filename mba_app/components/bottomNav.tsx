@@ -22,7 +22,7 @@ export default function BottomNav() {
       <TouchableOpacity style={{alignItems: "center"}} onPress={() => {
         if (segments.length>0) router.replace("/");
       }}>
-        <Feather name="home" size={24} color={segments[0] ? "black" : "purple"} />
+        <Feather name="home" size={24} color={segments[0] ? "black" : "purple"}/>
         <Text style={{fontWeight: 'bold'}}>Home</Text>
       </TouchableOpacity>
 
