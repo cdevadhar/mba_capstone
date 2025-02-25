@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { View, Text } from "react-native";
+import {View, Text} from 'react-native';
+import BottomNav from '@/components/bottomNav';
+import { StyleSheet } from "react-native";
 
-export default function HomeScreen() {
+export default function IndexScreen() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -23,8 +25,9 @@ export default function HomeScreen() {
   if (loading) return null; // Prevent rendering until check is done
 
   return (
-    <View>
-      <Text>Welcome to the Home Screen</Text>
+    <View style={{flex: 1}}>
+      <Text>Home Screen</Text>
+      <BottomNav />
     </View>
   );
 }

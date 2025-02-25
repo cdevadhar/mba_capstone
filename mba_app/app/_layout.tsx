@@ -1,7 +1,24 @@
-import { useState, useEffect } from "react";
-import { Stack, useRouter, useSegments, useRootNavigationState } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Stack } from "expo-router";
 
 export default function RootLayout() {
-  return <Stack />;
+  return <Stack>
+     <Stack.Screen
+        name="index"
+        options={{
+          animation: 'none'
+        }}
+      />
+      <Stack.Screen
+        name="Tribe"
+        options={{
+          animation: 'none'
+        }}
+      />
+      <Stack.Screen
+        name="Connect"
+        options={{
+          animation: 'none'
+        }}
+      />
+  </Stack>;
 }
