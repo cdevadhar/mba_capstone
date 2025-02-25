@@ -3,6 +3,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Checkbox } from 'react-native-paper';
 import { useState } from 'react';
+import { Link } from 'expo-router';
 
 const CommunicationPreferenceScreen = () => {
   const [checked, setChecked] = useState([false, false, false]);
@@ -19,14 +20,16 @@ const CommunicationPreferenceScreen = () => {
       <View style={styles.optionsContainer}>
         {["Texting", "Talking over the phone", "Hanging out in person"].map((item, index) => (
           <TouchableOpacity key={index} style={styles.optionRow} onPress={()=> setCheck(index)}>
-            <Checkbox status={checked[index] ? 'checked' : 'unchecked'}/>
+            <View style={{ borderWidth: 1, borderColor: 'black'}}>
+                <Checkbox status={checked[index] ? 'checked' : 'unchecked'} uncheckedColor='black' color='purple'/>
+            </View>
             <Text style={styles.optionText}>{item}</Text>
           </TouchableOpacity>
         ))}
       </View>
-      <TouchableOpacity style={styles.nextButton}>
+      <Link href="/Proceed" style={styles.nextButton}>
         <Text style={styles.nextText}>Next</Text>
-      </TouchableOpacity>
+      </Link>
     </View>
   );
 };

@@ -2,8 +2,9 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Card, Button } from 'react-native-paper';
 import { Link } from 'expo-router';
+import { Stack } from 'expo-router';
 
-const WelcomeScreen = ({ navigation }: any) => {
+const WelcomeScreen = () => {
   return (
     <View style={styles.container}>
       <Card style={styles.card}>
@@ -21,6 +22,7 @@ const WelcomeScreen = ({ navigation }: any) => {
     </View>
   );
 };
+
 
 
 const styles = StyleSheet.create({

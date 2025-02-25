@@ -19,8 +19,8 @@ const SatisfactionSurvey = () => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' },
-    card: { backgroundColor: '#EAE2F8', padding: 20, borderRadius: 10, marginBottom: 20 },
+    container: { flex: 1, alignItems: 'center', backgroundColor: '#fff' },
+    card: { backgroundColor: '#EAE2F8', padding: 20, borderRadius: 10, marginTop: 20 },
     roundedCard: { backgroundColor: '#EAE2F8', padding: 20, borderRadius: 50, marginBottom: 20 },
     title: { fontSize: 18, fontWeight: 'bold' },
     subtitle: { fontSize: 14 },
