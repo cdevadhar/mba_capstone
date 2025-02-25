@@ -85,4 +85,5 @@ const styles = StyleSheet.create({
   }
 });
 
-export { WelcomeScreen, styles};
+export default WelcomeScreen;
+export {styles};

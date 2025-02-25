@@ -1,7 +1,11 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity} from "react-native";
+import { Link } from "expo-router";
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const OnboardingCompletionScreen = () => {
+  const router = useRouter();
   return (
     <View style={styles.container}>
       <View style={styles.card}>
@@ -10,7 +14,11 @@ const OnboardingCompletionScreen = () => {
         </View>
       </View>
       
-      <TouchableOpacity style={styles.button}>
+      <TouchableOpacity style={styles.button} onPress={async() => {
+        await AsyncStorage.setItem("onboardingCompleted", "true");
+        router.dismissAll();
+        router.replace("/");
+      }}>
         <Text style={styles.buttonText}>Start your Journey</Text>
       </TouchableOpacity>
     </View>

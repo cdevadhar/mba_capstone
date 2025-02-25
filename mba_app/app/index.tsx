@@ -1,8 +1,30 @@
-import { WelcomeScreen } from "./Welcome";
+import { useEffect, useState } from "react";
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { View, Text } from "react-native";
 
+export default function HomeScreen() {
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
-export default function Index() {
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      const hasSeenOnboarding = await AsyncStorage.getItem("onboardingCompleted");
+      if (!hasSeenOnboarding) {
+        router.replace("/Welcome"); // Redirect to onboarding screen
+        return;
+      }
+      setLoading(false);
+    };
+
+    checkOnboarding();
+  }, []);
+
+  if (loading) return null; // Prevent rendering until check is done
+
   return (
-    <WelcomeScreen></WelcomeScreen>
-  )
+    <View>
+      <Text>Welcome to the Home Screen</Text>
+    </View>
+  );
 }

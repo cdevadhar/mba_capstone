@@ -10,10 +10,14 @@ const SatisfactionSurvey = () => {
         <Text style={styles.subtitle}>We want to help you feel more connected - it's only human!</Text>
       </View>
       <Link href="/VibeCheck" style={styles.button}>
-        <TouchableOpacity><Text style={styles.buttonText}>Beginner: Teach me Everything!</Text></TouchableOpacity>
+        <Text style={styles.buttonText}>Beginner: Teach me Everything!</Text>
       </Link>
-      <TouchableOpacity style={styles.button}><Text style={styles.buttonText}>Intermediate: Room for Improvement for sure.</Text></TouchableOpacity>
-      <TouchableOpacity style={styles.button}><Text style={styles.buttonText}>Advanced: I'm a communication Ninja.</Text></TouchableOpacity>
+      <Link href="/VibeCheck" style={styles.button}>
+        <Text style={styles.buttonText}>Intermediate: Room for Improvement for sure.</Text>
+      </Link>
+      <Link href="/VibeCheck" style={styles.button}>
+        <Text style={styles.buttonText}>Advanced: I'm a communication Ninja.</Text>
+      </Link>
     </View>
   );
 };
