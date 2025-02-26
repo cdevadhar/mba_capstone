@@ -1,8 +1,8 @@
 import BottomNav from "@/components/bottomNav";
-import { Modal, View, Text, Button, StyleSheet, FlatList } from 'react-native';
-import { useState } from "react";
+import { Modal, View, Text, Button, StyleSheet, ScrollView, TextInput, Touchable, TouchableOpacity} from 'react-native';
+import { useEffect, useState } from "react";
 import { Feather } from "@expo/vector-icons";
-import Contacts, { getContactByIdAsync } from "expo-contacts";
+import * as Contacts  from 'expo-contacts';
 
 interface Member {
     id: string;
@@ -17,15 +17,21 @@ const TribeScreen = () => {
     { id: '3', name: 'Alex Johnson' },
   ]);
   const [contacts, setContacts] = useState<Contacts.Contact[]>([]);
-  const renderItem = ({ item }: { item: Member }) => (
-    <View style={styles.member}>
-      <Feather name="user" size={30} color="black" style={styles.icon} />  {/* Use Feather icon */}
+  const [searchString, setSearchString] = useState<string>('');
+  const [filteredContacts, setFilteredContacts] = useState<Contacts.Contact[]>([]);
+
+  const renderItem = (item : Member) => (
+    <View key={item.id} style={styles.member}>
+      <Feather name="user" size={30} color="black" style={styles.icon} />
       <Text style={styles.memberName}>{item.name}</Text>
     </View>
   );
 
   const getContacts = async() => {
+      if (contacts.length>0) return;
+      console.log("called function");
       const { status } = await Contacts.requestPermissionsAsync();
+      console.log("returned");
       console.log(status);
       if (status === 'granted') {
         const { data } = await Contacts.getContactsAsync({
@@ -33,19 +39,21 @@ const TribeScreen = () => {
         });
         console.log(data);
         setContacts(data);
+        setFilteredContacts(data);
       }
   }
+
+  useEffect(() => {
+    let filtered = contacts.filter(contact => contact.name && contact.name.toLowerCase().includes(searchString.toLowerCase()));
+    setFilteredContacts(filtered);
+  }, [searchString])
   return (
     <View style={{flex: 1}}>
-        <Button title="Add Tribe Member" onPress={() => {
+        <Button title="Add Tribe Member" onPress={async() => {
+            await getContacts();
             setModalVisible(true);
-            getContacts();
         }} />
-        <FlatList
-            data={members}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-        />
+        {members.map(member => renderItem(member))}
         <Modal
             animationType="slide"
             transparent={true}
@@ -54,11 +62,16 @@ const TribeScreen = () => {
         >
             <View style={styles.modalOverlay}>
                 <View style={styles.modalView}>
-                <Button title="Close" onPress={() => setModalVisible(false)} />
-                <Text style={styles.modalText}>This is a modal!</Text>
-                
+                <TouchableOpacity style={{position: "absolute", top: 15, right: 15}} onPress={()=>setModalVisible(false)}>
+                    <Feather name="x" size={30} color="red"></Feather>
+                </TouchableOpacity>
+                <TextInput value={searchString} onChangeText={(query) => setSearchString(query)} placeholder="Search Contacts" style={{marginTop: 30, height: 40, marginLeft: 5, padding: 10, fontSize: 18, backgroundColor: '#eee', borderRadius: 15}}></TextInput>
+                <ScrollView style={{maxHeight: "65%"}}>
+                    {filteredContacts.map(contact =>
+                        contact.name ? renderItem({'id': contact.id || '', 'name': contact.name}): <View></View>
+                    )}
+                </ScrollView>
                 </View>
-            
             </View>
         </Modal>
         <BottomNav />
