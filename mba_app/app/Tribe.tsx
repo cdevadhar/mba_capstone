@@ -4,18 +4,55 @@ import { useEffect, useState } from "react";
 import { Feather } from "@expo/vector-icons";
 import * as Contacts  from 'expo-contacts';
 import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
  
+interface Connection {
+    interaction: string;
+    notes: string;
+    date: Date;
+}
+interface Detail {
+    label: string;
+    value: string;
+}
+interface Member {
+    id: string;
+    name: string;
+    phones?: Contacts.PhoneNumber[]
+    emails?: Contacts.Email[]
+    connection_reminder: 'Daily' | 'Weekly' | 'Monthly';
+    next_reminder: number;
+    connection_log: Connection[];
+    details: Detail[];
+}
 const TribeScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [members, setMembers] = useState<Contacts.Contact[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
   const [contacts, setContacts] = useState<Contacts.Contact[]>([]);
   const [searchString, setSearchString] = useState<string>('');
   const [filteredContacts, setFilteredContacts] = useState<Contacts.Contact[]>([]);
   const [selectedContacts, setSelectedContacts] = useState<Contacts.Contact[]>([]);
   const router = useRouter();
   
-  const renderMember = (item : Contacts.Contact) => (
-    <TouchableOpacity onPress={()=>router.push("/ContactCard")} key={item.id} style={styles.member}>
+  const createMember = (contact: Contacts.Contact) => {
+    const member: Member = {
+        id: contact.id || '', 
+        name: contact.name, 
+        phones: contact.phoneNumbers, 
+        emails: contact.emails, 
+        connection_reminder: 'Weekly', 
+        next_reminder: Date.now(), 
+        connection_log: [], 
+        details:[]
+    };
+    return member;
+  }
+  const memberExists = (id: string | undefined) => {
+    if (!id) return false;
+    return members.some(member => member.id==id);
+  }
+  const renderMember = (item : Member) => (
+    <TouchableOpacity onPress={()=>router.push(`/ContactCard?contactId=${item.id}`)} key={item.id} style={styles.member}>
       <Feather name="user" size={30} color="black" style={styles.icon} />
       <Text style={styles.memberName}>{item.name}</Text>
     </TouchableOpacity>
@@ -23,9 +60,9 @@ const TribeScreen = () => {
 
   const renderContact = (item : Contacts.Contact) => (
     <TouchableOpacity 
-        disabled={members.includes(item)} 
+        disabled={memberExists(item.id)} 
         key={item.id} 
-        style={members.includes(item) ? styles.alreadyMemberContact : (selectedContacts.includes(item) ? styles.selectedContact: styles.member)} 
+        style={memberExists(item.id) ? styles.alreadyMemberContact : (selectedContacts.includes(item) ? styles.selectedContact: styles.member)} 
         onPress={()=>setSelected(item)}
     >
       <Feather name="user" size={30} color="black" style={styles.icon} />
@@ -63,6 +100,16 @@ const TribeScreen = () => {
     let filtered = contacts.filter(contact => contact.name && contact.name.toLowerCase().includes(searchString.toLowerCase()));
     setFilteredContacts(filtered);
   }, [searchString])
+
+  useEffect(() => {
+    const getData = async() => {
+        const memberIds = (await AsyncStorage.getAllKeys()).filter(key=>key!=='onboardingCompleted');
+        const members = (await AsyncStorage.multiGet(memberIds)).map(pair=>JSON.parse(pair[1] || ''));
+        setMembers(members);
+    }
+    getData();
+  }, [])
+
   return (
     <View style={{flex: 1}}>
         <Button title="Add Tribe Member" onPress={async() => {
@@ -87,10 +134,14 @@ const TribeScreen = () => {
                 <TouchableOpacity 
                     onPress={() => {
                         let temp = members;
-                        temp = temp.concat(selectedContacts);
-                        setMembers(temp);
+                        const newMembers = selectedContacts.map(contact=>createMember(contact));
+                        temp = temp.concat(newMembers)
                         setSelectedContacts([]);
                         setModalVisible(false);
+                        for (const newMember of newMembers) {
+                            AsyncStorage.setItem(newMember.id || '', JSON.stringify(newMember));
+                        }
+                        setMembers(temp);
                     }} 
                     style={{width: "100%", alignItems: 'center', marginTop: 30, backgroundColor: selectedContacts.length==0 ? 'gray' : 'green', padding: 15, borderRadius: 15}} 
                     disabled={selectedContacts.length==0}

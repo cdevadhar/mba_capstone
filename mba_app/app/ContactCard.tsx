@@ -1,18 +1,53 @@
 import { Feather } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useState, useEffect} from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Modal, TextInput} from 'react-native';
 import { Avatar, Card, Menu } from 'react-native-paper';
+import { useLocalSearchParams } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Contacts from 'expo-contacts';
+
+interface Connection {
+    interaction: string;
+    notes: string;
+    date: Date;
+}
+interface Detail {
+    label: string;
+    value: string;
+}
+interface Member {
+    id: string;
+    name: string;
+    phones?: Contacts.PhoneNumber[]
+    emails?: Contacts.Email[]
+    connection_reminder: 'Daily' | 'Weekly' | 'Monthly';
+    next_reminder: number;
+    connection_log: Connection[];
+    details: Detail[];
+}
+
 
 const ContactCard = () => {
   const [reminder, setReminder] = useState('Weekly');
   const [menuVisible, setMenuVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-
+  const [member, setMember] = useState<Member>();
+  let { contactId} = useLocalSearchParams();
+  useEffect(() => {
+    const getData = async() => {
+        let id = contactId;
+        if (!contactId) return;
+        if (Array.isArray(contactId)) contactId = contactId[0];
+        const member = JSON.parse((await AsyncStorage.getItem(contactId)) || '');
+        setMember(member);
+    }
+    getData();
+  }, [])
   return (
     <View style={styles.container}>
       <View style={styles.card}>
         <Avatar.Icon size={120} icon="account" style={styles.avatar} />
-        <Text style={styles.name}>Val Sandoval</Text>
+        <Text style={styles.name}>{member?.name}</Text>
         
         <View style={styles.iconContainer}>
           <TouchableOpacity style={styles.iconButton}><Text style={styles.icon}>📞</Text></TouchableOpacity>
