@@ -5,11 +5,12 @@ import { Avatar, Card, Menu } from 'react-native-paper';
 import { useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Contacts from 'expo-contacts';
+import { useRouter } from 'expo-router';
 
 interface Connection {
     interaction: string;
     notes: string;
-    date: Date;
+    date: string;
 }
 interface Detail {
     label: string;
@@ -33,7 +34,7 @@ const ContactCard = () => {
   const [member, setMember] = useState<Member>();
   const [detailLabel, setDetailLabel] = useState<string>('');
   const [detailValue, setDetailValue] = useState<string>('');
-
+  const router = useRouter();
   let { contactId} = useLocalSearchParams();
 
   useEffect(() => {
@@ -105,7 +106,7 @@ const ContactCard = () => {
         
       </Card>
       <View style={styles.wrapperView}>
-        <TouchableOpacity style={{...styles.infoCard, width: "48%", marginRight: "2%", backgroundColor: '#cfb0f5'}}>
+        <TouchableOpacity style={{...styles.infoCard, width: "48%", marginRight: "2%", backgroundColor: '#cfb0f5'}} onPress={()=>router.push(`/ConnectionLog?contactId=${contactId}`)}>
             <View style={styles.wrapperView}>
                 <Text style={{...styles.label, fontSize: 16}}>📅 Connection Log</Text>
             </View>
@@ -154,20 +155,25 @@ const ContactCard = () => {
                 onChangeText={(text)=>setDetailValue(text)}
             />
 
-            <TouchableOpacity style={{...styles.button, marginTop: 15, backgroundColor: '#f55167'}} onPress={()=>setModalVisible(false)}>
-                <Text style={styles.buttonText}>Cancel</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={{...styles.button, marginTop: 5}} 
-                onPress={()=>{
-                    addDetail({'label': detailLabel, 'value': detailValue}); 
-                    setDetailLabel('');
-                    setDetailValue('');
-                    setModalVisible(false);
-                }}
+            <View style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
+                <TouchableOpacity
+                    style={{...styles.button, backgroundColor: '#f55167'}}
+                    onPress={() => setModalVisible(false)}
                 >
-                <Text style={styles.buttonText}>Save</Text>
-            </TouchableOpacity>
+                    <Text style={styles.buttonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={styles.button}
+                    onPress={()=>{
+                        addDetail({'label': detailLabel, 'value': detailValue}); 
+                        setDetailLabel('');
+                        setDetailValue('');
+                        setModalVisible(false);
+                    }}
+                >
+                    <Text style={styles.buttonText}>Save</Text>
+                </TouchableOpacity>
+            </View>
             </View>
         </View>
         </Modal>
@@ -260,7 +266,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContainer: {
-    width: 300,
+    width: '85%',
     padding: 20,
     backgroundColor: '#EDE7F6',
     borderRadius: 10,
@@ -279,14 +285,17 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   button: {
-    backgroundColor: '#5E4B8B',
+    backgroundColor: "#5C4387",
+    padding: 10,
     borderRadius: 10,
-    paddingVertical: 8,
-    alignItems: 'center',
+    alignSelf: "flex-end",
+    marginTop: 15,
+    width: '47%',
+    marginRight: '6%',
+    alignItems: 'center'
   },
   buttonText: {
     color: '#FFF',
-    fontWeight: 'bold',
   },
 });
 

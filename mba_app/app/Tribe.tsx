@@ -9,7 +9,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 interface Connection {
     interaction: string;
     notes: string;
-    date: Date;
+    date: string;
 }
 interface Detail {
     label: string;
