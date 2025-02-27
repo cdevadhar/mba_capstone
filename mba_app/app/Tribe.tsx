@@ -3,41 +3,55 @@ import { Modal, View, Text, Button, StyleSheet, ScrollView, TextInput, Touchable
 import { useEffect, useState } from "react";
 import { Feather } from "@expo/vector-icons";
 import * as Contacts  from 'expo-contacts';
-
-interface Member {
-    id: string;
-    name: string;
-}
-  
+ 
 const TribeScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [members, setMembers] = useState<Member[]>([
-    { id: '1', name: 'John Doe' },
-    { id: '2', name: 'Jane Smith' },
-    { id: '3', name: 'Alex Johnson' },
-  ]);
+  const [members, setMembers] = useState<Contacts.Contact[]>([]);
   const [contacts, setContacts] = useState<Contacts.Contact[]>([]);
   const [searchString, setSearchString] = useState<string>('');
   const [filteredContacts, setFilteredContacts] = useState<Contacts.Contact[]>([]);
+  const [selectedContacts, setSelectedContacts] = useState<Contacts.Contact[]>([]);
 
-  const renderItem = (item : Member) => (
+  const renderMember = (item : Contacts.Contact) => (
     <View key={item.id} style={styles.member}>
       <Feather name="user" size={30} color="black" style={styles.icon} />
       <Text style={styles.memberName}>{item.name}</Text>
     </View>
   );
 
+  const renderContact = (item : Contacts.Contact) => (
+    <TouchableOpacity 
+        disabled={members.includes(item)} 
+        key={item.id} 
+        style={members.includes(item) ? styles.alreadyMemberContact : (selectedContacts.includes(item) ? styles.selectedContact: styles.member)} 
+        onPress={()=>setSelected(item)}
+    >
+      <Feather name="user" size={30} color="black" style={styles.icon} />
+      <Text style={styles.memberName}>{item.name}</Text>
+    </TouchableOpacity>
+  );
+
+  const setSelected = (contact: Contacts.Contact) => {
+    let temp = [...selectedContacts];
+    let index = temp.indexOf(contact)
+    if (index>=0) {
+        temp.splice(index, 1);
+        setSelectedContacts(temp);
+    }
+    else {
+        temp.push(contact);
+        setSelectedContacts(temp);
+    }
+  }
+
   const getContacts = async() => {
       if (contacts.length>0) return;
-      console.log("called function");
       const { status } = await Contacts.requestPermissionsAsync();
-      console.log("returned");
       console.log(status);
       if (status === 'granted') {
         const { data } = await Contacts.getContactsAsync({
             fields: [Contacts.Fields.Name, Contacts.Fields.PhoneNumbers],
         });
-        console.log(data);
         setContacts(data);
         setFilteredContacts(data);
       }
@@ -53,7 +67,7 @@ const TribeScreen = () => {
             await getContacts();
             setModalVisible(true);
         }} />
-        {members.map(member => renderItem(member))}
+        {members.map(member => renderMember(member))}
         <Modal
             animationType="slide"
             transparent={true}
@@ -62,13 +76,35 @@ const TribeScreen = () => {
         >
             <View style={styles.modalOverlay}>
                 <View style={styles.modalView}>
-                <TouchableOpacity style={{position: "absolute", top: 15, right: 15}} onPress={()=>setModalVisible(false)}>
+                <TouchableOpacity style={{position: "absolute", top: 15, right: 15}} onPress={()=>{
+                    setSelectedContacts([]);
+                    setModalVisible(false);
+                }}>
                     <Feather name="x" size={30} color="red"></Feather>
                 </TouchableOpacity>
-                <TextInput value={searchString} onChangeText={(query) => setSearchString(query)} placeholder="Search Contacts" style={{marginTop: 30, height: 40, marginLeft: 5, padding: 10, fontSize: 18, backgroundColor: '#eee', borderRadius: 15}}></TextInput>
-                <ScrollView style={{maxHeight: "65%"}}>
+                <TouchableOpacity 
+                    onPress={() => {
+                        let temp = members;
+                        temp = temp.concat(selectedContacts);
+                        setMembers(temp);
+                        setSelectedContacts([]);
+                        setModalVisible(false);
+                    }} 
+                    style={{width: "100%", alignItems: 'center', marginTop: 30, backgroundColor: selectedContacts.length==0 ? 'gray' : 'green', padding: 15, borderRadius: 15}} 
+                    disabled={selectedContacts.length==0}
+                >
+                    <Text style={{alignContent: 'center', fontSize: 18, color: 'white'}}>Add Selected Contacts</Text>
+                </TouchableOpacity>
+                <TextInput 
+                    value={searchString} 
+                    onChangeText={(query) => setSearchString(query)} 
+                    placeholder="Search Contacts" 
+                    style={{marginTop: 5, height: 40, padding: 10, fontSize: 18, backgroundColor: '#eee', borderRadius: 15}}
+                >
+                </TextInput>
+                <ScrollView style={{maxHeight: "65%", marginTop: 10}}>
                     {filteredContacts.map(contact =>
-                        contact.name ? renderItem({'id': contact.id || '', 'name': contact.name}): <View></View>
+                        contact.name ? renderContact(contact): <View></View>
                     )}
                 </ScrollView>
                 </View>
@@ -113,13 +149,29 @@ const styles = StyleSheet.create({
         borderRadius: 5,
         borderBottomWidth: 0.5
     },
+    selectedContact: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 10,
+        backgroundColor: '#cfb0f5',
+        borderRadius: 5,
+        borderBottomWidth: 0.5
+    },
+    alreadyMemberContact: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 10,
+        backgroundColor: '#cbcacc',
+        borderRadius: 5,
+        borderBottomWidth: 0.5
+    },
     icon: {
         marginRight: 10,
     },
-        memberName: {
+    memberName: {
         fontSize: 18,
         fontWeight: 'bold',
-    },
+    }
 });
 
 export default TribeScreen;
