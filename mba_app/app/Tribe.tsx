@@ -3,6 +3,7 @@ import { Modal, View, Text, Button, StyleSheet, ScrollView, TextInput, Touchable
 import { useEffect, useState } from "react";
 import { Feather } from "@expo/vector-icons";
 import * as Contacts  from 'expo-contacts';
+import { useRouter } from "expo-router";
  
 const TribeScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -11,12 +12,13 @@ const TribeScreen = () => {
   const [searchString, setSearchString] = useState<string>('');
   const [filteredContacts, setFilteredContacts] = useState<Contacts.Contact[]>([]);
   const [selectedContacts, setSelectedContacts] = useState<Contacts.Contact[]>([]);
-
+  const router = useRouter();
+  
   const renderMember = (item : Contacts.Contact) => (
-    <View key={item.id} style={styles.member}>
+    <TouchableOpacity onPress={()=>router.push("/ContactCard")} key={item.id} style={styles.member}>
       <Feather name="user" size={30} color="black" style={styles.icon} />
       <Text style={styles.memberName}>{item.name}</Text>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderContact = (item : Contacts.Contact) => (
