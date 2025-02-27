@@ -28,14 +28,16 @@ interface Member {
 
 
 const ContactCard = () => {
-  const [reminder, setReminder] = useState('Weekly');
   const [menuVisible, setMenuVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [member, setMember] = useState<Member>();
+  const [detailLabel, setDetailLabel] = useState<string>('');
+  const [detailValue, setDetailValue] = useState<string>('');
+
   let { contactId} = useLocalSearchParams();
+
   useEffect(() => {
     const getData = async() => {
-        let id = contactId;
         if (!contactId) return;
         if (Array.isArray(contactId)) contactId = contactId[0];
         const member = JSON.parse((await AsyncStorage.getItem(contactId)) || '');
@@ -43,6 +45,30 @@ const ContactCard = () => {
     }
     getData();
   }, [])
+
+  useEffect(() => {
+    const setData = async() => {
+        if (!contactId) return;
+        if (Array.isArray(contactId)) contactId = contactId[0];
+        await AsyncStorage.setItem(contactId, JSON.stringify(member));
+    }
+    setData();
+  }, [member])
+
+  const setReminder = (reminder: "Daily" | "Monthly" | "Weekly") => {
+    if (!member) return;
+    let temp = {...member};
+    temp.connection_reminder = reminder;
+    setMember(temp);
+  }
+
+  const addDetail = (detail: Detail) => {
+    if (!member) return;
+    let temp = {...member};
+    temp.details.push(detail);
+    setMember(temp);
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.card}>
@@ -67,7 +93,7 @@ const ContactCard = () => {
                     setMenuVisible(false); // Reset state
                     setTimeout(() => setMenuVisible(true), 10); // Open after short delay
                   }}>
-                    <Text style={styles.value}>{reminder} ▾</Text>
+                    <Text style={styles.value}>{member?.connection_reminder} ▾</Text>
                 </TouchableOpacity>
             }
             >
@@ -87,7 +113,7 @@ const ContactCard = () => {
         <Card style={{...styles.infoCard, width: "50%"}}>
             <View style={styles.wrapperView}>
                 <Text style={styles.label}>Next:</Text>
-                <Text style={styles.value}>February 5th</Text>
+                <Text style={styles.value}>{new Date(member?.next_reminder || Date.now()).toLocaleDateString('en-US', {month: 'long', day: 'numeric' })}</Text>
             </View>
         </Card>
       </View>
@@ -98,18 +124,14 @@ const ContactCard = () => {
         </TouchableOpacity>
       </View>
       <ScrollView>
-        <Card style={styles.detailCard}>
-            <View style={styles.wrapperView}>
-                <Text style={styles.label}>🎂 Birthday</Text>
-                <Text style={styles.value}>April 19th, 1994</Text>
-            </View>
-        </Card>
-        <Card style={styles.detailCard}>
-            <View style={styles.wrapperView}>
-                <Text style={styles.label}>👤 Partner’s Name</Text>
-                <Text style={styles.value}>Greg</Text>
-            </View>
-        </Card>
+        {member?.details.map((detail, index) =>
+            <Card key={index} style={styles.detailCard}>
+                <View style={styles.wrapperView}>
+                    <Text style={styles.label}>{detail.label}</Text>
+                    <Text style={styles.value}>{detail.value}</Text>
+                </View>
+            </Card>
+        )}
       </ScrollView>
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.overlay}>
@@ -118,23 +140,32 @@ const ContactCard = () => {
 
             <Text style={{fontSize: 18}}>Label</Text>
             <TextInput 
+                value={detailLabel}
                 style={styles.input} 
                 placeholder="Partner's Name" 
-                // onChangeText={setLabel}
+                onChangeText={(text)=>setDetailLabel(text)}
             />
 
             <Text style={{fontSize: 18, marginTop: 10}}>Value</Text>
             <TextInput 
+                value={detailValue}
                 style={styles.input} 
                 placeholder="Greg" 
-                // onChangeText={setValue}
+                onChangeText={(text)=>setDetailValue(text)}
             />
 
             <TouchableOpacity style={{...styles.button, marginTop: 15, backgroundColor: '#f55167'}} onPress={()=>setModalVisible(false)}>
                 <Text style={styles.buttonText}>Cancel</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={{...styles.button, marginTop: 5}} onPress={()=>setModalVisible(false)}>
+            <TouchableOpacity style={{...styles.button, marginTop: 5}} 
+                onPress={()=>{
+                    addDetail({'label': detailLabel, 'value': detailValue}); 
+                    setDetailLabel('');
+                    setDetailValue('');
+                    setModalVisible(false);
+                }}
+                >
                 <Text style={styles.buttonText}>Save</Text>
             </TouchableOpacity>
             </View>
@@ -225,7 +256,7 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    justifyContent: 'center',
+    // justifyContent: 'center',
     alignItems: 'center',
   },
   modalContainer: {
@@ -233,6 +264,7 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#EDE7F6',
     borderRadius: 10,
+    marginTop: '50%'
   },
   title: {
     fontSize: 24,
