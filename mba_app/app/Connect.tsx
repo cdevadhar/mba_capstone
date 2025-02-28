@@ -1,73 +1,158 @@
-import React from "react";
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet} from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, FlatList, Modal, TextInput, Button, StyleSheet } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { format, isToday, isThisWeek, compareAsc } from "date-fns";
 import BottomNav from "@/components/bottomNav";
 
-const ConnectScreen = () => {
+export default function TaskList() {
+  const [tasks, setTasks] = useState([
+    { id: "1", text: "Call Mom", date: new Date() },
+    { id: "2", text: "Coffee with Dru", date: new Date(new Date().setDate(new Date().getDate() + 2)) },
+  ]);
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [newEvent, setNewEvent] = useState("");
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const addEvent = () => {
+    if (newEvent.trim() === "") return;
+    setTasks([...tasks, { id: Date.now().toString(), text: newEvent, date }].sort((a, b) => compareAsc(a.date, b.date)));
+    setNewEvent("");
+    setModalVisible(false);
+  };
+
+  const todayTasks = tasks.filter((task) => isToday(task.date));
+  const weekTasks = tasks.filter((task) => isThisWeek(task.date, { weekStartsOn: 1 }) && !isToday(task.date));
   return (
-    <View style={{ flex: 1, backgroundColor: "#F5F2FD", paddingBottom: 20 }}>
-      <ScrollView>
-        <Section title="Today's connections" icon="calendar">
-          <ConnectionItem name="Call Mom" />
-        </Section>
+    <View style={{flex: 1}}>
+    <View style={styles.container}>
+      {todayTasks.length > 0 && (
+        <View style={{marginBottom: 15}}>
+          <Text style={styles.sectionTitle}>Today's Connections</Text>
+          <FlatList
+            data={todayTasks}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <View style={styles.taskItem}>
+                <Text>{item.text}</Text>
+              </View>
+            )}
+          />
+        </View>
+      )}
 
-        <Section title="This week" icon="emoticon-outline">
-          <ConnectionItem name="Coffee with Dru (Tuesday)" />
-        </Section>
+      {weekTasks.length > 0 && (
+        <>
+          <Text style={styles.sectionTitle}>This Week</Text>
+          <FlatList
+            data={weekTasks}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <View style={styles.taskItem}>
+                <Text>{item.text} ({format(item.date, "EEEE")})</Text>
+              </View>
+            )}
+          />
+        </>
+      )}
 
-        <TouchableOpacity style={styles.eventButton}>
-          <Text style={styles.eventText}>+ An Event</Text>
-        </TouchableOpacity>
+      <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.addButton}>
+        <Text style={styles.addButtonText}>+ An Event</Text>
+      </TouchableOpacity>
 
-        <Section title="Special Occasions" icon="cake-variant">
-          <SpecialItem text="Order Dru a Birthday gift (1 week away!)" />
-          <SpecialItem text="Congratulations Val for Graduating !" />
-        </Section>
-      </ScrollView>
-      <BottomNav />
+      {/* Modal for Adding Events */}
+      <Modal visible={modalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add Event</Text>
+            <TextInput
+              placeholder="Event description"
+              value={newEvent}
+              onChangeText={setNewEvent}
+              style={styles.input}
+            />
+            <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
+              <Text>Select Date: {format(date, "PPP")}</Text>
+            </TouchableOpacity>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={date}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  setShowDatePicker(false);
+                  if (selectedDate) setDate(selectedDate);
+                }}
+              />
+            )}
+
+            <Button title="Add" onPress={addEvent} />
+            <Button title="Cancel" color="red" onPress={() => setModalVisible(false)} />
+          </View>
+        </View>
+      </Modal>
+    </View>
+    <BottomNav />
     </View>
   );
-};
-
-const Section: React.FC<{ title: string, icon: keyof typeof MaterialCommunityIcons.glyphMap, children: React.ReactNode}> = ({ title, icon, children}) => (
-  <View style={styles.section}>
-    <View style={styles.sectionHeader}>
-      <MaterialCommunityIcons name={icon} size={20} color="#4C2A85" />
-      <Text style={styles.sectionTitle}>{title}</Text>
-    </View>
-    {children}
-  </View>
-);
-
-const ConnectionItem: React.FC<{ name: string }> = ({ name }) => (
-  <View style={styles.item}>
-    <View style={styles.avatar}>
-      <Text style={styles.avatarText}>A</Text>
-    </View>
-    <Text style={styles.itemText}>{name}</Text>
-    <MaterialCommunityIcons name="checkbox-marked-outline" size={20} color="#4C2A85" />
-  </View>
-);
-
-const SpecialItem: React.FC<{ text: string }> = ({ text }) => (
-  <TouchableOpacity style={styles.specialItem}>
-    <Text style={styles.specialText}>{text}</Text>
-  </TouchableOpacity>
-);
-
+}
 
 const styles = StyleSheet.create({
-  section: { margin: 16, backgroundColor: "#E5DDFB", borderRadius: 12, padding: 10 },
-  sectionHeader: { flexDirection: "row", alignItems: "center", marginBottom: 10 },
-  sectionTitle: { fontSize: 16, fontWeight: "bold", marginLeft: 10, color: "#4C2A85" },
-  item: { flexDirection: "row", alignItems: "center", padding: 10 },
-  avatar: { width: 30, height: 30, borderRadius: 15, backgroundColor: "#DCC8FC", justifyContent: "center", alignItems: "center" },
-  avatarText: { color: "#4C2A85", fontWeight: "bold" },
-  itemText: { flex: 1, fontSize: 16, marginLeft: 10 },
-  eventButton: { backgroundColor: "#2E2E2E", margin: 16, padding: 12, borderRadius: 8, alignItems: "center" },
-  eventText: { color: "#FFF", fontSize: 16 },
-  specialItem: { backgroundColor: "#2E2E2E", padding: 12, marginHorizontal: 16, marginBottom: 10, borderRadius: 8 },
-  specialText: { color: "#FFF", fontSize: 16 },
+  container: {
+    // flex: 1,
+    padding: 20,
+    backgroundColor: "#f5f5f5",
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  taskItem: {
+    padding: 10,
+    backgroundColor: "#E6DAF0",
+    marginVertical: 5,
+  },
+  addButton: {
+    backgroundColor: "black",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 20,
+  },
+  addButtonText: {
+    color: "white",
+    fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+  },
+  dateButton: {
+    padding: 10,
+    backgroundColor: "#E6DAF0",
+    borderRadius: 5,
+    marginBottom: 10,
+  },
 });
-
-export default ConnectScreen;
