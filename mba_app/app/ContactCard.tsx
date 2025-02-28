@@ -70,6 +70,23 @@ const ContactCard = () => {
     setMember(temp);
   }
 
+  const markComplete = () => {
+    if (!member) return;
+    let temp = {...member};
+    if (temp.connection_reminder=='Daily') {
+        temp.next_reminder+=86400000;
+    }
+    else if (temp.connection_reminder=='Weekly') {
+        temp.next_reminder+=86400000*7;
+    }
+    else {
+        const now = new Date();
+        now.setMonth(now.getMonth()+1);
+        temp.next_reminder+=(now.getTime());
+    }
+    setMember(temp);
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.card}>
@@ -111,12 +128,12 @@ const ContactCard = () => {
                 <Text style={{...styles.label, fontSize: 16}}>📅 Connection Log</Text>
             </View>
         </TouchableOpacity>
-        <Card style={{...styles.infoCard, width: "50%"}}>
+        <TouchableOpacity style={{...styles.infoCard, width: "50%"}} onPress={()=>markComplete()}>
             <View style={styles.wrapperView}>
                 <Text style={styles.label}>Next:</Text>
                 <Text style={styles.value}>{new Date(member?.next_reminder || Date.now()).toLocaleDateString('en-US', {month: 'long', day: 'numeric' })}</Text>
             </View>
-        </Card>
+        </TouchableOpacity>
       </View>
       <View style={{...styles.wrapperView, justifyContent: 'space-between', alignItems: 'center'}}>
         <Text style={styles.detailsHeader}>Details</Text>
