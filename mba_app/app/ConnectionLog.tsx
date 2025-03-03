@@ -23,6 +23,7 @@ interface Member {
     connection_log: Connection[];
     details: Detail[];
 }
+
 const ConnectionLogScreen = () => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [interaction, setInteraction] = useState<Connection>({interaction: '', notes: '', date: ''});

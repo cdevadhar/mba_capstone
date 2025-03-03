@@ -49,6 +49,7 @@ const ContactCard = () => {
 
   useEffect(() => {
     const setData = async() => {
+        console.log("updating async storage");
         if (!contactId) return;
         if (Array.isArray(contactId)) contactId = contactId[0];
         await AsyncStorage.setItem(contactId, JSON.stringify(member));
@@ -60,6 +61,19 @@ const ContactCard = () => {
     if (!member) return;
     let temp = {...member};
     temp.connection_reminder = reminder;
+    const nextReminder = new Date();
+    if (reminder=="Daily") {
+        // first reminder is tomorrow
+        nextReminder.setDate(nextReminder.getDate() + 1);
+    }
+    else if (reminder=="Weekly") {
+        // first reminder is in a week
+        nextReminder.setDate(nextReminder.getDate() + 7);
+    }
+    else if (reminder=="Monthly") {
+        nextReminder.setMonth(nextReminder.getMonth() + 1);
+    }
+    temp.next_reminder = nextReminder.getTime();
     setMember(temp);
   }
 
@@ -80,9 +94,9 @@ const ContactCard = () => {
         temp.next_reminder+=86400000*7;
     }
     else {
-        const now = new Date();
+        const now = new Date(temp.next_reminder);
         now.setMonth(now.getMonth()+1);
-        temp.next_reminder+=(now.getTime());
+        temp.next_reminder=(now.getTime());
     }
     setMember(temp);
   }
@@ -129,9 +143,12 @@ const ContactCard = () => {
             </View>
         </TouchableOpacity>
         <TouchableOpacity style={{...styles.infoCard, width: "50%"}} onPress={()=>markComplete()}>
-            <View style={styles.wrapperView}>
-                <Text style={styles.label}>Next:</Text>
-                <Text style={styles.value}>{new Date(member?.next_reminder || Date.now()).toLocaleDateString('en-US', {month: 'long', day: 'numeric' })}</Text>
+            <View style={{...styles.wrapperView, justifyContent: 'space-between'}}>
+                <View style={{flexDirection: 'row'}}>
+                    <Text style={styles.label}>Next:</Text>
+                    <Text style={styles.value}>{new Date(member?.next_reminder || Date.now()).toLocaleDateString('en-US', {month: 'short', day: 'numeric' })}</Text> 
+                </View>
+                <Text style={{...styles.value, marginBottom: 5}}>🎯</Text>
             </View>
         </TouchableOpacity>
       </View>

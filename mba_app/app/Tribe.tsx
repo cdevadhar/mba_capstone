@@ -41,7 +41,7 @@ const TribeScreen = () => {
         phones: contact.phoneNumbers, 
         emails: contact.emails, 
         connection_reminder: 'Weekly', 
-        next_reminder: Date.now(), 
+        next_reminder: Date.now()+604800000, 
         connection_log: [], 
         details:[]
     };
