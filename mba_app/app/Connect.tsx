@@ -4,26 +4,33 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { format, isToday, isThisWeek, compareAsc } from "date-fns";
 import BottomNav from "@/components/bottomNav";
 
+interface Event {
+    id: string;
+    text: string;
+    date: Date;
+    isReminder: boolean;
+}
+
 export default function TaskList() {
-  const [tasks, setTasks] = useState([
-    { id: "1", text: "Call Mom", date: new Date() },
-    { id: "2", text: "Coffee with Dru", date: new Date(new Date().setDate(new Date().getDate() + 2)) },
+  const [tasks, setTasks] = useState<Event[]>([
+    { id: "1", text: "Call Mom", date: new Date(), isReminder: false},
+    { id: "2", text: "Coffee with Dru", date: new Date(new Date().setDate(new Date().getDate() + 2)), isReminder: false },
   ]);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [newEvent, setNewEvent] = useState("");
   const [date, setDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const addEvent = () => {
     if (newEvent.trim() === "") return;
-    setTasks([...tasks, { id: Date.now().toString(), text: newEvent, date }].sort((a, b) => compareAsc(a.date, b.date)));
+    setTasks([...tasks, { id: Date.now().toString(), text: newEvent, date, isReminder: false}].sort((a, b) => compareAsc(a.date, b.date)));
     setNewEvent("");
     setModalVisible(false);
   };
 
   const todayTasks = tasks.filter((task) => isToday(task.date));
-  const weekTasks = tasks.filter((task) => isThisWeek(task.date, { weekStartsOn: 1 }) && !isToday(task.date));
+  const weekTasks = tasks.filter((task) => isThisWeek(task.date, { weekStartsOn: 0 }) && !isToday(task.date));
+
   return (
     <View style={{flex: 1}}>
     <View style={styles.container}>
@@ -72,24 +79,25 @@ export default function TaskList() {
               onChangeText={setNewEvent}
               style={styles.input}
             />
-            <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.dateButton}>
-              <Text>Select Date: {format(date, "PPP")}</Text>
-            </TouchableOpacity>
-
-            {showDatePicker && (
-              <DateTimePicker
+            <Text>Select Date:</Text>
+            <DateTimePicker
+                style={{marginLeft: -10, marginTop: 5}}
                 value={date}
                 mode="date"
                 display="default"
                 onChange={(event, selectedDate) => {
-                  setShowDatePicker(false);
-                  if (selectedDate) setDate(selectedDate);
+                    if (selectedDate) setDate(selectedDate);
                 }}
-              />
-            )}
-
-            <Button title="Add" onPress={addEvent} />
-            <Button title="Cancel" color="red" onPress={() => setModalVisible(false)} />
+            />
+            <View style={{display: 'flex', flexDirection: 'row'}}>
+                <TouchableOpacity onPress={addEvent} style={styles.confirmButton}>
+                    <Text style={{color: 'white'}}>Add Event</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setModalVisible(false)} style={{...styles.confirmButton, backgroundColor: '#f55167'}}>
+                    <Text style={{color: 'white'}}>Cancel</Text>
+                </TouchableOpacity>
+            </View>
+           
           </View>
         </View>
       </Modal>
@@ -154,5 +162,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#E6DAF0",
     borderRadius: 5,
     marginBottom: 10,
+  },
+  confirmButton: {
+    backgroundColor: "#5C4387",
+    padding: 10,
+    borderRadius: 10,
+    alignSelf: "flex-end",
+    marginTop: 15,
+    width: '47%',
+    marginRight: '6%',
+    alignItems: 'center'
   },
 });
