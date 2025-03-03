@@ -105,6 +105,9 @@ export default function TaskList() {
         let existingArr;
         if (existingEvents==null) existingArr = [];
         else existingArr = JSON.parse(existingEvents);
+        for (const event of existingArr) {
+            event.date = new Date(event.date);
+        }
         for (const event of existingArr) temp.push(event);
         setTasks(temp);
         setGotData(true);

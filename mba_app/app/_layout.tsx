@@ -4,7 +4,7 @@ import { Provider as PaperProvider } from 'react-native-paper';
 export default function RootLayout() {
   return (
     <PaperProvider>
-      <Stack>
+      <Stack screenOptions={{ title: "Fill Your Cup" }}>
         <Stack.Screen
             name="index"
             options={{

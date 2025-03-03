@@ -35,6 +35,7 @@ const ConnectionLogScreen = () => {
         if (!contactId) return;
         if (Array.isArray(contactId)) contactId = contactId[0];
         const member = JSON.parse((await AsyncStorage.getItem(contactId)) || '');
+        console.log(member);
         setMember(member);
     }
     getData();
