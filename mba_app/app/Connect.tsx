@@ -15,10 +15,7 @@ interface Event {
 }
 
 export default function TaskList() {
-  const [tasks, setTasks] = useState<Event[]>([
-    { text: "Call Mom", date: new Date(), isReminder: false, memberId: null, completed: false},
-    { text: "Coffee with Dru", date: new Date(new Date().setDate(new Date().getDate() + 2)), isReminder: false, memberId: null, completed: false},
-  ]);
+  const [tasks, setTasks] = useState<Event[]>([]);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [newEvent, setNewEvent] = useState("");
@@ -34,6 +31,9 @@ export default function TaskList() {
     let existingArr;
     if (existingEvents==null) existingArr = [];
     else existingArr = JSON.parse(existingEvents);
+    for (const event of existingArr) {
+        event.date = new Date(event.date);
+    }
     existingArr.push({text: newEvent, date, isReminder: false, memberId: null, completed: false});
     await AsyncStorage.setItem('events', JSON.stringify(existingArr));
     setNewEvent("");

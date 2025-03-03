@@ -103,7 +103,7 @@ const TribeScreen = () => {
 
   useEffect(() => {
     const getData = async() => {
-        const memberIds = (await AsyncStorage.getAllKeys()).filter(key=>key!=='onboardingCompleted');
+        const memberIds = (await AsyncStorage.getAllKeys()).filter(key=>key!=='onboardingCompleted' && key!=='events');
         const members = (await AsyncStorage.multiGet(memberIds)).map(pair=>JSON.parse(pair[1] || ''));
         setMembers(members);
     }
