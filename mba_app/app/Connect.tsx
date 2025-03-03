@@ -26,9 +26,16 @@ export default function TaskList() {
   const [showCompleted, setShowCompleted] = useState<boolean>(false);
   const [gotData, setGotData] = useState<boolean>(false);
 
-  const addEvent = () => {
+  const addEvent = async () => {
     if (newEvent.trim() === "") return;
     setTasks([...tasks, {text: newEvent, date, isReminder: false, memberId: null, completed: false}].sort((a, b) => compareAsc(a.date, b.date)));
+
+    const existingEvents = await AsyncStorage.getItem('events');
+    let existingArr;
+    if (existingEvents==null) existingArr = [];
+    else existingArr = JSON.parse(existingEvents);
+    existingArr.push({text: newEvent, date, isReminder: false, memberId: null, completed: false});
+    await AsyncStorage.setItem('events', JSON.stringify(existingArr));
     setNewEvent("");
     setModalVisible(false);
   };
@@ -58,6 +65,14 @@ export default function TaskList() {
                 member['next_reminder'] = nextReminder.getTime();
                 await AsyncStorage.setItem(temp[i].memberId || '', JSON.stringify(member));
             }
+            else {
+                const existingEvents = await AsyncStorage.getItem('events');
+                let existingArr = JSON.parse(existingEvents || '');
+                for (let j=0; j<existingArr.length; j++) {
+                    if (existingArr[j].text===completed.text) existingArr[j].completed = true;
+                }
+                await AsyncStorage.setItem('events', JSON.stringify(existingArr));
+            }
             break;
         }
     }
@@ -78,7 +93,7 @@ export default function TaskList() {
   useEffect(() => {
     async function getData() {
         if (gotData) return;
-        const memberIds = (await AsyncStorage.getAllKeys()).filter(key=>key!=='onboardingCompleted');
+        const memberIds = (await AsyncStorage.getAllKeys()).filter(key=>key!=='onboardingCompleted' && key!=='events');
         const members = (await AsyncStorage.multiGet(memberIds)).map(pair=>JSON.parse(pair[1] || ''));
         let temp = [...tasks];
         for (const member of members) {
@@ -86,6 +101,11 @@ export default function TaskList() {
             const newTask = {"text": "Connection reminder: "+member["name"], date: reminderDate, isReminder: true, memberId: member["id"], completed: false};
             temp.push(newTask);
         }
+        const existingEvents = await AsyncStorage.getItem('events');
+        let existingArr;
+        if (existingEvents==null) existingArr = [];
+        else existingArr = JSON.parse(existingEvents);
+        for (const event of existingArr) temp.push(event);
         setTasks(temp);
         setGotData(true);
     }
