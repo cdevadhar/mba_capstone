@@ -49,7 +49,6 @@ const ContactCard = () => {
 
   useEffect(() => {
     const setData = async() => {
-        console.log("updating async storage");
         if (!contactId) return;
         if (Array.isArray(contactId)) contactId = contactId[0];
         await AsyncStorage.setItem(contactId, JSON.stringify(member));

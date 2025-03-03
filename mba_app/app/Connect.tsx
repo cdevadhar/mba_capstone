@@ -39,7 +39,6 @@ export default function TaskList() {
         if (temp[i].text===completed.text) {
             temp[i].completed = true;
             if (temp[i].isReminder) {
-                console.log("setting up next reminder");
                 // have to set up the next reminder
                 if (temp[i].memberId==null) return;
                 const member = JSON.parse((await AsyncStorage.getItem(temp[i].memberId || '') || ''));
@@ -57,7 +56,6 @@ export default function TaskList() {
                     nextReminder.setMonth(nextReminder.getMonth() + 1);
                 }
                 member['next_reminder'] = nextReminder.getTime();
-                console.log(member);
                 await AsyncStorage.setItem(temp[i].memberId || '', JSON.stringify(member));
             }
             break;
@@ -70,7 +68,6 @@ export default function TaskList() {
   let laterTasks = tasks.filter((task) => !isThisWeek(task.date, {weekStartsOn: 0})).sort((a, b) => a.date.getTime()-b.date.getTime());
 
   useEffect(() => {
-    console.log("useEffect fired");
     todayTasks = tasks.filter((task) => isToday(task.date));
     weekTasks = tasks.filter((task) => isThisWeek(task.date, { weekStartsOn: 0 }) && !isToday(task.date)).sort((a, b) => a.date.getTime()-b.date.getTime());
     laterTasks = tasks.filter((task) => !isThisWeek(task.date, {weekStartsOn: 0})).sort((a, b) => a.date.getTime()-b.date.getTime());

@@ -8,19 +8,34 @@ export default function RootLayout() {
         <Stack.Screen
             name="index"
             options={{
-              animation: 'none'
+              animation: 'none',
+              title: 'Home'
             }}
           />
           <Stack.Screen
             name="Tribe"
             options={{
-              animation: 'none'
+              animation: 'none',
+              title: 'Tribe'
             }}
           />
           <Stack.Screen
             name="Connect"
             options={{
-              animation: 'none'
+              animation: 'none',
+              title: 'Connect'
+            }}
+          />
+          <Stack.Screen
+            name="ContactCard"
+            options={{
+              title: 'Contact Card'
+            }}
+          />
+          <Stack.Screen
+            name="ConnectionLog"
+            options={{
+              title: 'Connection Log'
             }}
           />
       </Stack>
